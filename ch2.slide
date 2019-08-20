@@ -66,3 +66,17 @@ Utilisateurs de GO : "[[https://github.com/golang/go/wiki/GoUsers][golang.org/wi
 - Pas d'exceptions
 - Pas d'annotations
 - Pas de types génériques
+
+* Pourquoi ces omissions ?
+
+- La lisibilité du code est primordiale.
+- En lisant le code, on doit comprendre ce qu'il fait de façon claire.
+- On doit savoir facilement comment l'écrire pour qu'il fonctionne.
+- Parfois une petite boucle vaut mieux qu'un appel de fonction inconnue
+
+Plus d'infos sur les principes de conception du GO:
+
+- [[http://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html][Less is exponentially more (Pike, 2012)]]
+- [[http://talks.golang.org/2012/splash.article][Go at Google: Language Design in the Service of Software Engineering (Pike, 2012)]]
+
+* Exemples
