@@ -1,0 +1,39 @@
+Cours PRR
+Chapitre 2 - Introduction au langage Go
+
+Patrick Lachaize
+HEIG-VD / TIC
+patrick.lachaize@heig-vd.ch
+
+* Table des matières
+
+- Le langage GO
+- Comparaison de Go et Java
+- Exemples
+- Programmation concurrente
+- Outils standards de développement
+
+Adapté de "[[http://talks.golang.org/2015/go-for-java-programmers.slide][Go for Java Programmers]]" de Sameer Ajmani
+
+* Le langage Go
+
+"Go is an open source programming language that makes it easy to build simple, reliable, and efficient software." -- [[http://golang.org]]
+
+Créé par Google en 2007 pour des besoins internes
+- Robert Griesemer, Rob Pike et Ken Thompson.
+
+Prévu pour :
+- logiciels serveurs, microservices
+- montée en charge en exploitation (-> (10⁶⁺ machines)
+programmation concurrente
+- montée en charge en génie logiciel (-> 5000+ développeurs)
+arborescence étendue de code source
+
+Open source depuis 2009 avec une communauté très active
+Langage stable depuis la version 1 début 2012
+
+Utilisateurs de GO : "[[https://github.com/golang/go/wiki/GoUsers][golang.org/wiki/GoUsers]]"
+
+
+
+
