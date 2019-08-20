@@ -24,16 +24,45 @@ Créé par Google en 2007 pour des besoins internes
 
 Prévu pour :
 - logiciels serveurs, microservices
-- montée en charge en exploitation (-> (10⁶⁺ machines)
-programmation concurrente
-- montée en charge en génie logiciel (-> 5000+ développeurs)
-arborescence étendue de code source
+- montée en charge en exploitation ( 10⁶⁺ machines)
+  --> programmation concurrente
+- montée en charge en génie logiciel ( 5000+ développeurs)
+  --> arborescence étendue de code source
 
 Open source depuis 2009 avec une communauté très active
 Langage stable depuis la version 1 début 2012
 
 Utilisateurs de GO : "[[https://github.com/golang/go/wiki/GoUsers][golang.org/wiki/GoUsers]]"
 
+* Comparaison de Go et Java
 
+* Beaucoup de points communs
 
+- Descendance du C (langage impératif, accolades)
+- Typage statique fort
+- Ramasse-miette
+- Contrôle des accès mémoire (références nulles, dépassement d'indice)
+- Les variables sont toujours initialisées (zero/nil/false)
+- Méthodes
+- Interfaces
+- Assertions sur les types (`instanceof`)
+- Introspection (reflection)
 
+* Go est différent de plusieurs façons
+
+- La compilation produit un exécutable natif. Pas de VM
+- Librairies incluses dans l'exécutable (link statique)
+- Les fonctions sont manipulables comme des valeurs (first class citizen)
+- clotures (closures)
+- String est un type intégré, représenté en UTF-8
+- Maps et array/slices : types intégrés
+- Concurrence intégrée dans le langage (Goroutines et channels)
+
+* Volontairement exclus de GO
+- Pas de classes (types et structures comme recepteur)
+- Pas de constructeurs
+- Pas d'héritage (plutôt de la composition)
+- Pas systématiquement de getters/setters
+- Pas d'exceptions
+- Pas d'annotations
+- Pas de types génériques
