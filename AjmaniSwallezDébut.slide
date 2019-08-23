@@ -1,0 +1,177 @@
+Cours PRR
+Chapitre 2 - Introduction au langage Go
+
+Patrick Lachaize
+HEIG-VD / TIC
+patrick.lachaize@heig-vd.ch
+
+* Table des matières
+
+- Le langage GO
+- Comparaison de Go et Java
+- Exemples
+- Programmation concurrente
+- Outils standards de développement
+
+Adapté de "[[http://talks.golang.org/2015/go-for-java-programmers.slide][Go for Java Programmers]]" de Sameer Ajmani
+
+* Le langage Go
+
+"Go is an open source programming language that makes it easy to build simple, reliable, and efficient software." -- [[http://golang.org]]
+
+Créé par Google en 2007 pour des besoins internes
+- Robert Griesemer, Rob Pike et Ken Thompson.
+
+Prévu pour :
+- logiciels serveurs, microservices
+- montée en charge en exploitation ( 10⁶⁺ machines)
+  --> programmation concurrente
+- montée en charge en génie logiciel ( 5000+ développeurs)
+  --> arborescence étendue de code source
+
+Open source depuis 2009 avec une communauté très active
+Langage stable depuis la version 1 début 2012
+
+Utilisateurs de GO : "[[https://github.com/golang/go/wiki/GoUsers][golang.org/wiki/GoUsers]]"
+
+* Comparaison de Go et Java
+
+* Beaucoup de points communs
+
+- Descendance du C (langage impératif, accolades)
+- Typage statique fort
+- Ramasse-miette
+- Contrôle des accès mémoire (références nulles, dépassement d'indice)
+- Les variables sont toujours initialisées (zero/nil/false)
+- Méthodes
+- Interfaces
+- Assertions sur les types (`instanceof`)
+- Introspection (reflection)
+
+* Go est différent de plusieurs façons
+
+- La compilation produit un exécutable natif. Pas de VM
+- Librairies incluses dans l'exécutable (link statique)
+- Les fonctions sont manipulables comme des valeurs (first class citizen)
+- clotures (closures)
+- String est un type intégré, représenté en UTF-8
+- Maps et array/slices : types intégrés
+- Concurrence intégrée dans le langage (Goroutines et channels)
+
+* Volontairement exclus de GO
+- Pas de classes (types et structures comme recepteur)
+- Pas de constructeurs
+- Pas d'héritage (plutôt de la composition)
+- Pas systématiquement de getters/setters
+- Pas d'exceptions
+- Pas d'annotations
+- Pas de types génériques
+
+* Pourquoi ces omissions ?
+
+- La lisibilité du code est primordiale.
+- En lisant le code, on doit comprendre ce qu'il fait de façon claire.
+- On doit savoir facilement comment l'écrire pour qu'il fonctionne.
+- Parfois une petite boucle vaut mieux qu'un appel de fonction inconnue
+
+Plus d'infos sur les principes de conception du GO:
+
+- [[http://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html][Less is exponentially more (Pike, 2012)]]
+- [[http://talks.golang.org/2012/splash.article][Go at Google: Language Design in the Service of Software Engineering (Pike, 2012)]]
+
+* Exemples
+* Go, une syntaxe familière
+
+Main.java
+
+.code -edit golang-java/hello/Main.java
+
+hello.go
+
+.play -edit golang-java/hello/hello.go
+
+* Hello, web server
+
+.play golang-java/hello/server.go
+
+Les types viennent *après* les noms dans les déclarations
+Si son nom commence par une majuscule,  une variable est *publique*.
+Sinon, elle est *privée* (package).
+
+* Exemple : front-end de recherche sur Google
+
+.image golang-java/frontend-screenshot.png _ 1000
+
+.play golang-java/frontend.go /func main/,/func handleSearch/
+
+* Validation de la requête
+
+.code golang-java/frontend.go /func handleSearch/,/ENDQUERY/
+
+`query`:=`req.FormValue("q")` initialise une *nouvelle*variable* `query` du type de
+l'expression (`string`).
+
+`FormValue` est une *méthode* sur le type `*http.Request` :
+
+  package http
+  type Request struct {...}
+  func (r *Request) FormValue(key string) string {...}
+
+* Collecter les résultats
+
+.code golang-java/frontend.go /Run the Google search/,/ENDSEARCH/
+
+`Search` renvoie *2*valeurs* : un "slice" de résultats, et une erreur.
+
+  func Search(query string) ([]Result, error) {...}
+
+Les résultats sont valides uniquement si l'erreur est `nil`
+
+  type error interface {
+      Error() string // a useful human-readable error message
+  }
+
+Les erreurs peuvent être précisées via un cast ("type assertion").
+
+* Afficher les résultats
+
+.code golang-java/frontend.go /Render the/,/ENDRENDER/
+
+`resultsTemplate.Execute` produit du HTML et l'écrit dans un `io.Writer` :
+
+  type Writer interface {
+          Write(p []byte) (n int, err error)
+  }
+
+`http.ResponseWriter` implémente l'interface `io.Writer`.
+
+
+* Templates HTML avec injection de variables GO
+
+.play golang-java/frontend.go /A Result contains/,/\)\)/
+
+* Envoyer une requête à l'API Google Search
+
+.code golang-java/frontend.go /func Search/,/resp.Body.Close/
+
+L'instruction `defer` reporte l'exécution de `resp.Body.Close` losrque la fonction `Search` termine, dans tous les cas.
+
+* Parsing de la réponse JSON dans une structure Go
+
+.code golang-java/frontend.go /https:\/\/developers.google.com\/web-search\/docs/,/^}/
+
+* C'est tout pour le front-end !
+
+Nous n'avons utilisé que la librairie standard :
+
+  import (
+  	"encoding/json"
+  	"fmt"
+  	"html/template"
+  	"log"
+  	"net/http"
+  	"net/url"
+  	"time"
+  )
+Les serveurs Go peuvent facilement supporter la montée en charge : chaque requête tourne dans sa _goroutine_ .
+

@@ -13,21 +13,25 @@ patrick.lachaize@heig-vd.ch
 - Programmation concurrente
 - Outils standards de développement
 
-Adapté de "[[http://talks.golang.org/2015/go-for-java-programmers.slide][Go for Java Programmers]]" de Sameer Ajmani
+Crédits:
+- [[http://gopl.io][The Go Programming Language]] / Alan A. A. Donovan et Brian W. Kernighan
+- [[http://talks.golang.org/2015/go-for-java-programmers.slide][Go for Java Programmers]] / Sameer Ajmani
 
 * Le langage Go
 
 "Go is an open source programming language that makes it easy to build simple, reliable, and efficient software." -- [[http://golang.org]]
 
-Créé par Google en 2007 pour des besoins internes
-- Robert Griesemer, Rob Pike et Ken Thompson.
+Créé par Google en 2007 pour des besoins internes par :
+  Robert Griesemer, Rob Pike et Ken Thompson.
 
 Prévu pour :
+
 - logiciels serveurs, microservices
 - montée en charge en exploitation ( 10⁶⁺ machines)
-  --> programmation concurrente
+--> programmation concurrente
+
 - montée en charge en génie logiciel ( 5000+ développeurs)
-  --> arborescence étendue de code source
+--> arborescence étendue de code source
 
 Open source depuis 2009 avec une communauté très active
 Langage stable depuis la version 1 début 2012
@@ -37,7 +41,6 @@ Utilisateurs de GO : "[[https://github.com/golang/go/wiki/GoUsers][golang.org/wi
 * Comparaison de Go et Java
 
 * Beaucoup de points communs
-
 - Descendance du C (langage impératif, accolades)
 - Typage statique fort
 - Ramasse-miette
@@ -49,26 +52,24 @@ Utilisateurs de GO : "[[https://github.com/golang/go/wiki/GoUsers][golang.org/wi
 - Introspection (reflection)
 
 * Go est différent de plusieurs façons
-
 - La compilation produit un exécutable natif. Pas de VM
 - Librairies incluses dans l'exécutable (link statique)
-- Les fonctions sont manipulables comme des valeurs (first class citizen)
-- clotures (closures)
+- Les fonctions sont manipulables comme des valeurs (first class function)
+- Les fonctions peuvent avoir un état par capture de variables (closures)
 - String est un type intégré, représenté en UTF-8
 - Maps et array/slices : types intégrés
 - Concurrence intégrée dans le langage (Goroutines et channels)
 
-* Volontairement exclus de GO
+* Volontairement exclus du GO
 - Pas de classes (types et structures comme recepteur)
-- Pas de constructeurs
+- Pas systématiquement de constructeurs, getters/setters
 - Pas d'héritage (plutôt de la composition)
-- Pas systématiquement de getters/setters
+- Pas de déclaration d'implémentation d'interface
 - Pas d'exceptions
 - Pas d'annotations
 - Pas de types génériques
 
 * Pourquoi ces omissions ?
-
 - La lisibilité du code est primordiale.
 - En lisant le code, on doit comprendre ce qu'il fait de façon claire.
 - On doit savoir facilement comment l'écrire pour qu'il fonctionne.
@@ -79,4 +80,519 @@ Plus d'infos sur les principes de conception du GO:
 - [[http://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html][Less is exponentially more (Pike, 2012)]]
 - [[http://talks.golang.org/2012/splash.article][Go at Google: Language Design in the Service of Software Engineering (Pike, 2012)]]
 
-* Exemples
+* Premier exemple traditionnel
+
+Main.java
+
+.code -edit golang-java/hello/Main.java
+
+hello.go
+
+.play -edit golang-java/hello/hello.go
+
+* Les types en Go
+
+-  types de base
+
+	int, uint, int8, uint8, ...
+	bool, string
+	float32, float64
+	complex64, complex128
+
+- structures
+
+	struct {
+		Name string
+		Age  int
+	}
+
+- tableaux et slices
+
+	[]int, [3]string, []struct{ Name string }
+
+- tableaux associatifs
+
+	map[string]int
+
+* Les types en Go (suite)
+
+- pointeurs
+
+	*int, *Person
+
+- fonctions
+
+	func(int, int) int
+
+- canaux (channels)
+
+	chan bool
+
+- interfaces
+
+	interface {
+		Start()
+		Stop()
+	}
+
+* Déclaration de nouveaux types
+
+	type [name] [specification]
+
+`Person` est type basé sur un `struct`.
+
+	type Person struct {
+		name string
+		age  int
+	}
+
+`Celsius` est un type basé sur un `float64`.
+
+	type Celsius float64
+
+* Déclarations de fonctions
+
+	func [name] ([params]) [return value]
+	func [name] ([params]) ([return values])
+
+Fonction sum :
+
+	func sum(a int, b int) int {
+		return a + b
+	}
+
+Fonction avec plusieurs valeurs de retour :
+
+	func div(a, b int) (int, int)
+		return a / b, a % b
+	}
+
+Pour la clarté, valeurs de retour nommées:
+
+	func div(den, div int) (q, rem int)
+		return a / b, a % b
+	}
+
+* Déclaration de méthodes : fonctions avec récepteur
+
+	func ([receiver]) [name] ([params]) ([return values])
+
+Méthode sur un struct:
+
+	func (p Person) Major() bool {
+		return p.age >= 18
+	}
+
+Mais aussi méthode sur un `float64`:
+
+	func (c Celsius) Freezing() bool {
+		return c <= 0
+	}
+
+_Contrainte_ : les méthodes ne peuvent être définies *que* sur des types déclarés dans le même package.
+
+	// Ne compile pas
+	func (s string) Length() int { return len(s) }
+
+* Pointeurs?
+
+Symbole `&` pour obtenir l'adresse d'un variable.
+
+	a := "hello"
+	p := &a
+
+Symbole `*` pour déréférencer un pointeur.
+
+	fmt.Print(*p + ", world")
+
+Pas d'arithmétique avec les pointeurs. Pas de pointeurs fous.
+
+	a := "hello"
+	p := &a
+
+	p += 4  // non
+
+* Pourquoi des pointers?
+
+- passer des valeurs, pas d'effet de bord:
+
+	func double(x int) {
+		x *= 2
+	}
+
+- passer des pointeurs, effet de bord possibles:
+
+	func double(x *int) {
+		*x *= 2
+	}
+
+Maitrise de la disposition mémoire
+
+-  [ ]Person différent de [ ]*Person
+
+* Déclaration de méthodes sur des pointeurs
+
+Un récepteur se comporte comme n'importe quel paramêtre.
+
+Un pointeur permet de modifier le recepteur:
+
+	func (p *Person) IncAge() {
+		p.age++
+	}
+
+Le récepteur est une copie de pointeur (qui pointe sur la même adresse).
+
+Les appels de méthode sur nil sont valides ( et utiles !)
+
+	func (p *Person) Name() string {
+		if p == nil {
+			return "anonymous"
+		}
+		return p.name
+	}
+
+* Interfaces
+
+Une interface est un ensemble de méthodes.
+
+En Java:
+
+	interface Switch {
+		void open();
+		void close();
+	}
+
+En Go:
+
+	type OpenCloser interface {
+		Open()
+		Close()
+	}
+
+* Pas d'implémentation d'interfaces
+
+Les interfaces en java sont satisfaites *explicitement*.
+
+Les interfaces en java sont satisfaites *implicitement*.
+
+
+_Si_un_type_définit_toutes_les_méthodes_d'une_interface,_il_satisfait_cette_interface._
+
+Avantages:
+
+- moins de dépendances
+- pas de hiérarchie de types
+
+* FuncDraw: exemple d'utilisation d'une interface
+
+.image go4java/img/funcdraw.png 500 700
+
+* FuncDraw: package parser
+
+La méthode `Parse` analyse une chaine de caractère et retourne une "fonction"
+
+	func Parse(text string) (*Func, error) { ... }
+
+`Func` est un type basé sur un struct, avec une méthode `Eval`.
+
+	type Func struct { ... }
+
+	func (p *Func) Eval(x float64) float64 { ... }
+
+* FuncDraw: package draw
+
+La méthode `Draw` génère la courbe d'une "fonction" donnée.
+
+	func Draw(f *parser.Func) image.Image {
+		for x := start; x < end; x += inc {
+			y := f.Eval(x)
+			...
+		}
+	}
+
+`draw` depend de `parser`
+
+- cela rend les tests difficiles
+
+Avec plutôt une interface:
+
+	type Evaluable interface {
+		Eval(float64) float64
+	}
+
+	func Draw(f Evaluable) image.Image { ... }
+
+* Héritage vs Composition
+
+Beaucoup d'articles ont été écrits sur ce sujet.
+En général, la composition est préférée.
+Voyons pourquoi.
+
+* Runner (Java)
+
+.code go4java/BadInheritance.java /START_RUNNER/,/END_RUNNER/
+
+* RunCounter est-un Runner avec un compteur
+
+.code go4java/BadInheritance.java /START_COUNTING/,/END_COUNTING/
+
+* Laissons le courir et compter
+
+L'eécution de :
+
+.code go4java/BadInheritance.java /START_MAIN/,/END_MAIN/
+
+affiche:
+
+	running one
+	running two
+	running three
+	my runner ran 6 tasks
+
+Pourquoi 6 ?
+
+* Pourquoi 6 ?
+
+A cause de l'héritage:
+
+- encapsulation faible,
+- couplage fort,
+- bugs surprenants.
+
+.image go4java/img/badinheritance.png
+
+* Solution: remplacer l'héritage par une composition
+
+.code go4java/Composition.java /START_COUNTING/,/BREAK_COUNTING/
+
+* RunCounter (suite)
+
+.code go4java/Composition.java /BREAK_COUNTING/,/END_COUNTING/
+
+* Une composition plutôt qu'un héritage
+
+*Pros*
+
+- plus de bugs!
+- `Runner` is complètement indépendant de `RunCounter`.
+- La création de `Runner` peut être repoussée jusqu'à ce que l'on en aie besoin.
+- En typant runner avec une interface, on peut dynamiquement selectionner un type de Runner
+- Cela facilite en particulier le  'mocking' pour les tests.
+
+*Cons*
+
+- On doit explicitement définir des méthodes de délégation dans `RunCounter`:
+
+	public String getName() { return runner.getName(); }
+
+* Il n'y a pas d'héritage en Go
+
+type `Runner` similaire à la classe `Runner` en Java:
+
+# .code go4java/runner/runner.go /type Task/,/END_TASK/
+
+.code go4java/runner/runner.go /type Runner/,/END_RUNNER/
+
+Utilisons la composition -->
+
+* RunCounter avec composition d'un Runner
+
+`RunCounter` définit une variable `Runner`.
+
+.code go4java/runner/runner.go /type RunCounter/,
+
+* Struct embedding
+
+Dans le code précédent, on a toujours la méthode de délégation vers `Runner`:
+
+.code go4java/runner/runner.go /runner.Name/
+
+Mais on peut s'en passer avec le 'Struct embedding'
+
+On peut définir en Go des variables anonymes dans les structures. Cela revient à incorporer le type de ces variables dans les structures.
+
+C'est toujours de la *composition*, mais les variables et les méthodes définies dans ces types sont également automatiquement définies dans les structures qui les incorporent.
+
+Cela ressemble à de l'héritage mais les types incorporés sont réellement indépendants des structures qui les incorporent..
+
+* Exemple de 'struct embedding'
+
+Soit un type `Person`:
+
+.code go4java/embedsample.go /Person/,/Hi/
+
+On peut définir un type `Employee` incorporant `Person`:
+
+.code go4java/embedsample.go /Employee/,/}/
+
+Toutes les variables et méthodes de `Person` sont disponibles dans `Employee`:
+
+.code go4java/embedsample.go /var/,/Introduce/
+
+* Plus besoin de Name() dans RunCounter2
+
+.code go4java/runner/embed.go /type RunCounter2/,
+
+* Exemple avec incorporation d'une interface
+
+.code go4java/writecounter.go /WriteCounter/,/MAIN/
+
+WriteCounter peut être utilisé avec n'importe quel `io.ReadWriter`.
+
+.play go4java/writecounter.go /func main/,/^}/
+
+* Autre exemple: faciliter un 'mocking'
+
+Simuler seulement certaines méthodes de `net.Conn`
+
+	type Conn interface {
+	        Read(b []byte) (n int, err error)
+	        Write(b []byte) (n int, err error)
+	        Close() error
+	        LocalAddr() Addr
+	        RemoteAddr() Addr
+	        SetDeadline(t time.Time) error
+	        SetReadDeadline(t time.Time) error
+	        SetWriteDeadline(t time.Time) error
+	}
+
+afin de tester `handleCon` ?
+
+.code go4java/loopback.go /handleCon/
+
+On peut créer un type 'fakeConn' pour remplacer 'Conn' mais il faudrait redéfinir toutes les méthodes de  `Conn` dans 'fakeConn' pour pouvoir le passer à 'handleConn'
+
+* Plutôt incorporer l'interface Conn
+
+On peut tester `handleCon` avec le type`loopBack`:
+
+.code go4java/loopback.go /loopBack/,/^}/
+
+On n'y définit que les méthodes utilisées :
+
+.code go4java/loopback.go /Read/,
+
+et loopBack satisfait Conn
+
+* Concurrency
+
+* Concurrency
+
+It is part of the language, not a library.
+
+Based on two concepts:
+
+- goroutines: lightweight threads
+- channels: typed pipes used to communicate and synchronize between goroutines
+
+So cheap you can use them whenever you want.
+
+.image go4java/img/funnelin.jpg 300 700
+
+* Sleep and talk
+
+.code go4java/conc1.go /sleepAndTalk/,/^}/
+
+We want a message per second.
+
+.play go4java/conc1.go /func main/,/^}/
+
+What if we started all the `sleepAndTalk` concurrently?
+
+Just add `go`!
+
+* Concurrent sleep and talk
+
+.play go4java/conc2.go /func main/,/^}/
+
+That was fast ...
+
+When the `main` goroutine ends, the program ends.
+
+* Concurrent sleep and talk with more sleeping
+
+.play go4java/conc3.go /func main/,/^}/
+
+But synchronizing with `Sleep` is a bad idea.
+
+* Communicating through channels
+
+`sleepAndTalk` sends the string into the channel instead of printing it.
+
+.code go4java/chan.go /sleepAndTalk/,/^}/
+
+We create the channel and pass it to `sleepAndTalk`, then wait for the values to be sent.
+
+.play go4java/chan.go /func main/,/^}/
+
+* Let's count on the web
+
+We receive the next id from a channel.
+
+.code go4java/goodcounter.go /nextID/,/^}/
+
+We need a goroutine sending ids into the channel.
+
+.play go4java/goodcounter.go /func main/,/^}/
+
+[[http://localhost:8080/next]]
+
+* Let's fight!
+
+`select` allows us to chose among multiple channel operations.
+
+.play go4java/battle.go /battle/,/^}/
+
+Go - [[http://localhost:8080/fight?usr=go]]
+Java - [[http://localhost:8080/fight?usr=java]]
+
+* Chain of gophers
+
+.image go4java/img/chain.jpg
+
+Ok, I'm just bragging here
+
+* Chain of gophers
+
+.play go4java/goroutines.go /func f/,
+
+* Concurrency is very powerful
+
+And there's lots to learn!
+
+- [[http://talks.golang.org/2012/concurrency.slide#1][Go Concurrency Patterns]], by Rob Pike
+- [[http://talks.golang.org/2013/advconc.slide#1][Advanced Concurrency Patterns]], by Sameer Ajmani
+- [[http://talks.golang.org/2012/waza.slide#1][Concurrency is not Parellelism]], by Rob Pike
+
+.image go4java/img/busy.jpg
+
+* In conclusion
+
+Go is simple, consistent, readable, and fun.
+
+All types are equal
+
+- methods on any type
+
+Implicit interfaces
+
+- Structural typing
+- Less dependencies
+- Code testable and reusable
+
+Use composition instead of inheritance
+
+- Struct embedding to remove boilerplate.
+- Struct embedding of interfaces to satisfy them fast.
+
+Concurrency is awesome, and you should check it out.
+
+* What to do next?
+
+Learn Go on your browser with [[http://tour.golang.org][tour.golang.org]]
+
+Find more about Go on [[http://golang.org][golang.org]]
+
+Join the community at [[https://groups.google.com/forum/#!forum/Golang-nuts][golang-nuts]]
+
+Link to the slides [[http://talks.golang.org/2014/go4java.slide]]
