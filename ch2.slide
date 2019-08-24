@@ -114,7 +114,7 @@ Site officiel du Go : [[https://golang.org/][golang.org]]
  $ go build hello.go
  $ hello
 
-- Dans un sous-dossier src/.../helloheig du GOPATH (dossier go de votre home)
+- Dans un sous-dossier du GOPATH : %GOPATH%/src/.../helloheig/hello.go
  $ go install
  $ %GOPATH%/bin/helloheig
 
@@ -135,6 +135,7 @@ Le dossier helloheig correspond au package main et à l'exécutable helloheig
 
 * Reverse (avec une majuscule) dans un autre package
 - Reverse définie dans un fichier GOPATH/src/github.com/patricklac/utils/fonctions.go
+Tous les fichiers du dossier utils déclarent le package utils. Pas de main
 .code -edit sources/helloheig2pack/fonctions.go  /package/,/FIN/
 
 - main définie dans un fichier GOPATH/src/github.com/patricklac/helloheig/hello.go
@@ -183,9 +184,33 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
 
 	[]int, [3]string, []struct{ Name string }
 
-- tableaux associatifs
+- maps
 
 	map[string]int
+
+* Déclaration, affectation de variables
+- variable globale package
+ var mot string // chaine vide
+ var mot = "hello" // inférence du type à string
+
+- variable globale application
+ // Même syntaxe mais nom de varable avec majuscule
+ // A importer et référencer nom_package.Mot
+ var Mot string // chaine vide
+ var Mot = "Hello" // inférence du type à string
+
+- variable locale (dans une fonction)
+ var mot string // chaine vide
+ mot := "hello" // raccourci de var mot = "hello"
+
+- affectation d'une variable déclarée (dans une fonction)
+ mot = "hello"
+
+* Structures
+
+* Tableaux et slices
+
+* Maps
 
 * Les types en Go (suite)
 
