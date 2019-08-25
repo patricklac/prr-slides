@@ -165,7 +165,7 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
 
 * Bases du langage
 
-* Les types en Go
+* Les types en Go (1/2)
 
 -  types de base
 
@@ -260,7 +260,45 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
    noms := make(map[string]bool)
    mots := make(map[string]struct{})
 
-* Les types en Go (suite)
+* Instructions conditionnelles
+- if else avec initialisation
+ if x:= f(); x == 0 {
+  ...
+ } else {
+  ...
+ }
+
+- switch avec ou sans opérande
+  switch lancePièce() {                                switch () {
+  case "pile":                                         case x > 0:
+     pile++                                                return 1
+  case "face":                                         default:
+     face++                                                return 0
+  default:                                             case x < 0:
+     fmt.println("sur le coté !")                          return -1
+   }                                                   }
+
+* Boucles
+ for initialisation; condition; post {
+  ...
+ }
+
+- Tous les opérandes sont optionnels
+ for condition {  // boucle while
+ for { // boucle infinie
+
+- Boucle "foreach" avec range
+ func main() {
+ 	s, sep := "", ""
+ 	for _, arg := range os.Args[1:] {
+ 		s += sep + arg
+ 		sep = " "
+ 	}
+ 	fmt.Println(s)
+  }
+Le "_" permet de ne pas récupérer l'indice de boucle
+
+* Les types en Go (2/2)
 
 - pointeurs
 
@@ -270,10 +308,6 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
 
 	func(int, int) int
 
-- canaux (channels)
-
-	chan bool
-
 - interfaces
 
 	interface {
@@ -281,11 +315,15 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
 		Stop()
 	}
 
+- canaux (channels)
+
+	chan bool
+
 * Déclaration de nouveaux types
 
 	type [name] [specification]
 
-`Person` est type basé sur un `struct`.
+`Person` est un type basé sur un `struct`.
 
 	type Person struct {
 		name string
@@ -340,7 +378,7 @@ _Contrainte_ : les méthodes ne peuvent être définies *que* sur des types déc
 	// Ne compile pas
 	func (s string) Length() int { return len(s) }
 
-* Pointeurs?
+* Pointeurs
 
 Symbole `&` pour obtenir l'adresse d'un variable.
 
@@ -358,7 +396,7 @@ Pas d'arithmétique avec les pointeurs. Pas de pointeurs fous.
 
 	p += 4  // non
 
-* Pourquoi des pointers?
+* Pourquoi des pointers ?
 
 - passer des valeurs, pas d'effet de bord:
 
