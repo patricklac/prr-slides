@@ -167,7 +167,7 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
 
 * Les types en Go (1/2)
 
--  types de base
+-  nombres, booléen
 
 	int, uint, int8, uint8, ...
 	float32, float64, complex64, complex128
@@ -207,8 +207,8 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
  mot = "hello"
 
 * Structures
-- Champs (fields) accédées avec la notation "."
-- Initialisables avec un litéral
+- Champs (fields) accédés avec la notation "."
+- Initialisables avec un littéral
 
  	var fred struct {
  		prenom string
@@ -300,13 +300,13 @@ Le "_" permet de ne pas récupérer l'indice de boucle
 
 * Les types en Go (2/2)
 
-- pointeurs
-
-	*int, *Person
-
 - fonctions
 
 	func(int, int) int
+
+- pointeurs
+
+	*int, *Person
 
 - interfaces
 
@@ -318,21 +318,6 @@ Le "_" permet de ne pas récupérer l'indice de boucle
 - canaux (channels)
 
 	chan bool
-
-* Déclaration de nouveaux types
-
-	type [name] [specification]
-
-`Person` est un type basé sur un `struct`.
-
-	type Person struct {
-		name string
-		age  int
-	}
-
-`Celsius` est un type basé sur un `float64`.
-
-	type Celsius float64
 
 * Déclarations de fonctions
 
@@ -354,8 +339,63 @@ Fonction avec plusieurs valeurs de retour :
 Pour la clarté, valeurs de retour nommées:
 
 	func div(den, div int) (q, rem int)
-		return a / b, a % b
+		return a / b, a % b // ou affecter q et rem puis return
 	}
+
+* Fonctions valeurs (first class function)
+- les fonctions sont des types :
+
+.play sources/fonctions/fonctions.go /square/,/end/
+Un littéral de fonction  peut être affecté à des variables
+On peut donc le définir à l'intérieur d'une autre fonction
+Un littéral de fonction dans un paramètre en fait une fonction anonyme
+
+* Closures
+Les fonctions peuvent avoir un état (des données privées dans le 'heap')
+.code sources/squares/main.go /squares/,/end/
+Une fonction définie dans une fonction a accès aux variables de cette dernière
+A l'affectation de f, la variable x est capturée avec le littéral de fonction retourné
+
+* Capture de variables d'itération
+
+    var rmdirs []func()
+    for _, d := range tempDirs() {
+        dir := d
+        os.MkdirAll(dir,0755) // creates partent directories too
+        rmdirs = append(rmdirs, func() {
+            os.RemoveAll(dir) // la variable d ne peut pas être utilisée ici
+        })
+    }
+    . . .
+    for _, rmdir := range rmdirs {
+       rmdir() (( clean up
+    }
+
+La fonction passée à RemoveAll sera exécutée plus tard -> d aurait été écrasé
+
+
+
+
+
+* Déclaration de nouveaux types
+
+	type [name] [specification]
+
+`Person` est un type basé sur un `struct`.
+
+	type Person struct {
+		name string
+		age  int
+	}
+
+`fn` est un type basé sur une fonction
+
+    type fn func(int) int
+
+`Celsius` est un type basé sur un `float64`.
+
+	type Celsius float64
+
 
 * Déclaration de méthodes : fonctions avec récepteur
 
@@ -380,21 +420,26 @@ _Contrainte_ : les méthodes ne peuvent être définies *que* sur des types déc
 
 * Pointeurs
 
-Symbole `&` pour obtenir l'adresse d'un variable.
+Symbole `&` pour obtenir l'adresse d'un variable, `*` pour déréférencer un pointeur.
 
 	a := "hello"
 	p := &a
-
-Symbole `*` pour déréférencer un pointeur.
-
 	fmt.Print(*p + ", world")
 
 Pas d'arithmétique avec les pointeurs. Pas de pointeurs fous.
 
-	a := "hello"
-	p := &a
-
 	p += 4  // non
+
+new crée une variable anonyme et retourne un pointeur sur celle ci
+
+    p := new(int)
+    fmt.Println(*p) // 0
+
+    p := newInt() // équivalent
+    func newInt() *int {
+        var dummy int
+        return &dummy
+     }
 
 * Pourquoi des pointers ?
 
@@ -744,7 +789,6 @@ And there's lots to learn!
 - [[http://talks.golang.org/2013/advconc.slide#1][Advanced Concurrency Patterns]], by Sameer Ajmani
 - [[http://talks.golang.org/2012/waza.slide#1][Concurrency is not Parellelism]], by Rob Pike
 
-.image sources/img/busy.jpg
 
 * Programmation réseau en Go
 
