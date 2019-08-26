@@ -392,9 +392,33 @@ La fonction passée à RemoveAll sera exécutée plus tard -> d aurait été éc
 
     type fn func(int) int
 
-`Celsius` est un type basé sur un `float64`.
+`Celsius` et `Fahrenheit` sont des types basés sur `float64`.
 
 	type Celsius float64
+	type Fahrenheit float64
+	var celsiusBoue Celsius = 100
+	var fahrenheitBoue Fahrenheit = celsiusBoue // pb compil : pas le même type
+
+* Conversion de type
+- Si même type de base par la notation: type(variable)
+
+  func CToF(c Celsius) Fahrenheit { return Fahrenheit(c*9/5 + 32) }
+
+- Entre types numériques
+	var x float64 = 3.2
+	var n int = 2
+	n = int(x) // avec troncation, n = x ne compile pas
+	x = float64(n) // x = n ne compile pas, pas de conversion implicite
+
+- les string ne sont pas modifiables : conversion en [ ]byte ou [ ]rune
+   s:= "abc"
+   b:= []byte(s)
+   s2:= string(b)
+- conversion string / int
+   i, err := strconv.Atoi("-42")
+   s := strconv.Itoa(-42)
+
+
 
 
 * Déclaration de méthodes : fonctions avec récepteur
