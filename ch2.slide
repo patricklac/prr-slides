@@ -167,14 +167,12 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_
 
 * Les types en Go (1/2)
 
--  nombres, booléen
+-  nombres, booléen, chaines de caractères
 
 	int, uint, int8, uint8, ...
 	float32, float64, complex64, complex128
 	bool
-
-- caractères
-	string, byte, rune
+	string
 
 - structures
 
@@ -368,7 +366,7 @@ A l'affectation de f, la variable x est capturée avec le littéral de fonction 
     }
     . . .
     for _, rmdir := range rmdirs {
-       rmdir() (( clean up
+       rmdir() // clean up
     }
 
 La fonction passée à RemoveAll sera exécutée plus tard -> d aurait été écrasé
@@ -410,16 +408,30 @@ La fonction passée à RemoveAll sera exécutée plus tard -> d aurait été éc
 	n = int(x) // avec troncation, n = x ne compile pas
 	x = float64(n) // x = n ne compile pas, pas de conversion implicite
 
-- les string ne sont pas modifiables : conversion en [ ]byte ou [ ]rune
-   s:= "abc"
-   b:= []byte(s)
+- les string sont des []byte non modifiables : conversion en [ ]byte ou [ ]rune
+   s:= "aéb" // utf8 : 8 --> 32 bits
+   b:= []byte(s) // len: 4 (comme s) car é prend 2 bytes
    s2:= string(b)
-- conversion string / int
+   r := []rune(s) // unicode (32 bits), len: 3
+
+_Une_conversion_de_type_ne_peut_pas_échouer_à_l'exécution_
+
+* A ne pas confondre avec :
+
+- Conversion string / int
    i, err := strconv.Atoi("-42")
    s := strconv.Itoa(-42)
 
+- Assertion de type pour une interface (voir plus loin)
+    func lire(v io.Writer) {
+        if w,err:= v.(io.ReadWriter); err {
+            var b []byte
+            w.Read(b)
+            ...
+        }
+    }
 
-
+_Certaines_de_ces_conversions_peuvent_échouer_à_l'éxécution_
 
 * Déclaration de méthodes : fonctions avec récepteur
 
