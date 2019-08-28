@@ -11,13 +11,13 @@ patrick.lachaize@heig-vd.ch
 - Ressources et développement en Go
 - Bases du langage
 - Héritage vs Composition
-- Accès concurrents
+- Concurrence
 - Programmation réseau en Go
 
 Crédits:
 
 - [[http://gopl.io]] The Go Programming Language / Alan A. A. Donovan et Brian W. Kernighan
-- [[http://talks.golang.org/2015/go-for-java-programmers.slide]] Go for Java Programmers / Sameer Ajmani
+- [[http://talks.golang.org/2015/sources/go-for-java-programmers.slide]] Go for Java Programmers / Sameer Ajmani
 - [[http://talks.golang.org/2014/go4java.slide]] Go for Javaneros / Francesc Campoy
 
 * Le langage Go comparé à Java
@@ -422,7 +422,9 @@ _Une_conversion_de_type_ne_peut_pas_échouer_à_l'exécution_
    i, err := strconv.Atoi("-42")
    s := strconv.Itoa(-42)
 
-- Assertion de type pour une interface (voir plus loin)
+- Assertion de type pour une interface: `valeur.(type)`
+( équivalent de instanceof / cast en java )
+
     func lire(v io.Writer) {
         if w,err:= v.(io.ReadWriter); err {
             var b []byte
@@ -449,10 +451,13 @@ Mais aussi méthode sur un `float64`:
 		return c <= 0
 	}
 
-_Contrainte_ : les méthodes ne peuvent être définies *que* sur des types déclarés dans le même package.
+_Méthodes_définies_uniquement_sur_des_types_déclarés_dans_le_même_package._
 
-	// Ne compile pas
-	func (s string) Length() int { return len(s) }
+    func (s string) Length() int {  	// Ne compile pas avec un string comme récepteur
+        n := 0
+        for range s { n++ } // pas passé par gofmt !
+        return n
+    }
 
 * Pointeurs
 
@@ -735,91 +740,123 @@ On n'y définit que les méthodes utilisées :
 
 et loopBack satisfait Conn
 
-* Accès concurrents
+* Concurrence
 
-* Concurrency
 
-It is part of the language, not a library.
+* Communicating Sequential Processes (Hoare, 1978)
 
-Based on two concepts:
+Les programmes concurrents sont structurés comme des processus indépendants qui s'exécutent séquentiellement et qui communiquent par échange de messages
 
-- goroutines: lightweight threads
-- channels: typed pipes used to communicate and synchronize between goroutines
+L'exécution séquentielle est facile à comprendre, pas les callback asynchrones.
 
-So cheap you can use them whenever you want.
+"Don't communicate by sharing memory, share memory by communicating."
 
-.image sources/img/funnelin.jpg 300 700
+*Primitives*intégrées*en*Go:* goroutines, channels, et l'instruction `select`.
 
-* Sleep and talk
+* Goroutines
 
-.code sources/conc1.go /sleepAndTalk/,/^}/
+Les Goroutines sont comme des threads mais plus légères.
 
-We want a message per second.
+Elles démarrent avec peu de mémoire et s'étendent si besoin.
 
-.play sources/conc1.go /func main/,/^}/
+Les programmes en GO peuvent en gérer des centaines de millier.
 
-What if we started all the `sleepAndTalk` concurrently?
+Démarrage d'une goroutine par l'instruction `go` :
 
-Just add `go`!
+  go f(args)
 
-* Concurrent sleep and talk
+Go réparti les goroutines sur les threads de l'OS.
 
-.play sources/conc2.go /func main/,/^}/
+Une goroutine bloquée ne bloque pas un thread.
 
-That was fast ...
+* Canaux (Channel)
 
-When the `main` goroutine ends, the program ends.
+Les canaux permettent la communication entre les  goroutines.
 
-* Concurrent sleep and talk with more sleeping
+  c := make(chan string)
+  // goroutine 1
+  c <- "hello!"
+  // goroutine 2
+  s := <-c
+  fmt.Println(s) // "hello!"
 
-.play sources/conc3.go /func main/,/^}/
+- Par défaut, un channel n'a pas de buffer et bloque aussi à l'émission
+  c := make(chan string)
+  // nouvelle goroutine
+  go func() {c <- "hello!"}()
+  // goroutine "main"
+  s := <-c
+  fmt.Println(s) // "hello!"
 
-But synchronizing with `Sleep` is a bad idea.
+_Attention:_si_main_"termine",_toutes_les_goroutines_sont_abortées_
 
-* Communicating through channels
+* Select
 
-`sleepAndTalk` sends the string into the channel instead of printing it.
+  select {
+  case n := <-in1:
+    fmt.Println("received sur in1", n)
+  case n := <-in2:
+    fmt.Println("received sur in2", n)
+  case out <- v:
+    fmt.Println("sent sour out", v)
+  }
 
-.code sources/chan.go /sleepAndTalk/,/^}/
+- L'instruction `select` bloque jusqu'à ce qu'une communication ait lieu, sauf si option default.
+- Seule une option du select s'exécute. Un select est souvent pris dans une boucle.
 
-We create the channel and pass it to `sleepAndTalk`, then wait for the values to be sent.
+* Exemple: simulation de recherches sur Google
 
-.play sources/chan.go /func main/,/^}/
 
-* Let's count on the web
+Des fonctions Web, Image, Video (de type Search) :
+- à partir d'une requête en paramètre (query)
+- recherchent dans une catégorie capturée (kind) : "web2, "image", "video"
+- retournent des liens (Result), ici un simple message de fin de recherche
+- après un certain temps, simulé avec un  tirage aléatoire
 
-We receive the next id from a channel.
+.code sources/go-for-java-programmers/google-serial.go /START2/,/STOP2/
+
+* Recherches séquentielles
+
+La fonction Google lance séquentiellement des recherches Web, Image et Video.
+Elle retourne les résultats cumulés dans un slice.
+.code sources/go-for-java-programmers/google-serial.go /START1/,/STOP1/
+
+Un main pour l'essayer :
+.play sources/go-for-java-programmers/google-serial.go /func.main/,/}/
+
+
+* Recherches parallèles
+
+.play sources/go-for-java-programmers/google-parallel.go /Google/,/^}/
+
+Conversion facile: go func, channel
+
+Les recherches sont exécutées concurremment mais les résultats sont envoyés un à un dans le channel c, puis récupérés un par un dans la boucle for
+
+Il n'y a qu'une goroutine qui accède au slice results : pas besoin d'autre synchronisation
+
+_pas_de_locks,_pas_de_variables_conditionnelles,_pas_de_callback_
+
+* Recherches avec timeout : ne pas attendre les serveurs lents.
+
+.play -edit sources/go-for-java-programmers/google-timeout.go /START/,/STOP/
+L'instruction select permet de gérer les timeout, done, abort, ...
+Notez le passage du channel c à 3 buffers pour _délivrer_ les goroutines encore en exécution après timeout. Problème du "goroutine leak".
+Le channel n'est pas vidé mais plus de goroutines en attente dessus : une nouvelle requête en crée un autre et l'ancien passe au ramasse-miettes.
+
+* Autre exemple : distribution d' ids par un serveur Web
+
+On reçoit les ids sur un channel.
 
 .code sources/goodcounter.go /nextID/,/^}/
 
-We need a goroutine sending ids into the channel.
+main les envoie sur ce channel : _pas_de_compteur_partagé,_pas_de_lock,_..._
 
 .play sources/goodcounter.go /func main/,/^}/
 
-[[http://localhost:8080/next]]
+C'est tout ? Oui : [[http://localhost:8080/next]]
 
-* Let's fight!
-
-`select` allows us to chose among multiple channel operations.
-
-.play sources/battle.go /battle/,/^}/
-
-Go - [[http://localhost:8080/fight?usr=go]]
-Java - [[http://localhost:8080/fight?usr=java]]
-
-* Chain of gophers
-
-.image sources/img/chain.jpg
-
-Ok, I'm just bragging here
-
-* Chain of gophers
-
-.play sources/goroutines.go /func f/,
-
-* Concurrency is very powerful
-
-And there's lots to learn!
+* Pour en savoir plus sur la concurrence en GO
 
 - [[http://talks.golang.org/2012/concurrency.slide#1][Go Concurrency Patterns]], by Rob Pike
 - [[http://talks.golang.org/2013/advconc.slide#1][Advanced Concurrency Patterns]], by Sameer Ajmani
@@ -828,23 +865,42 @@ And there's lots to learn!
 
 * Programmation réseau en Go
 
-* In conclusion
+* netcat
+.code sources/chat/netcat.go /debutMain/,/finMain/
+io.copy(dst io.Writer, src io.Reader) // copie ligne à ligne jusqu'à ctrl-D, close ou erreur
+2 goroutines : fonction litérale pour la reception (1) , main pour l'émission (0)
+ctrl-D -> (0) close -> close du serveur -> (1) log "done" -> (1) envoi dans channel done -> (0) reception dans channel done -> fin d'exécution
 
-Go is simple, consistent, readable, and fun.
+* Chat Server
 
-All types are equal
+.code sources/chat/chat.go /debutMain/,/finMain/
 
-- methods on any type
+main écoute sur un port et accepte les connexions client
+Pour chaque client, il crée un goroutine handleConn pour s'occuper de la communication avec celui-ci, ce qui permet de les traiter concurremment
+Parallèlement, il crée une goroutine broadcaster qui va gérer les communications entre les handleConn
 
-Implicit interfaces
+* Channels pour broadcaster
 
-- Structural typing
-- Less dependencies
-- Code testable and reusable
+.code sources/chat/chat.go /debutChannel/,/finChannel/
 
-Use composition instead of inheritance
+channels de channels ...
 
-- Struct embedding to remove boilerplate.
-- Struct embedding of interfaces to satisfy them fast.
+Un `client` est un type de channel dans lequel broadcaster enverra des messages à un handleConn, donc à un client
+La notation "chan<-" limite son utilisation par broadcaster à l'envoi
+Il y aura un channel client par handleConn, donc par client
 
-Concurrency is awesome, and you should check it out.
+`entering` est un channel pour obtenir les nouveaux channels client à leurs connections
+`leaving` permet de savoir lorsqu'un client quitte
+
+'messages' permet la reception des messages "texte" des handleConn
+
+
+* broadcaster
+
+.code sources/chat/chat.go /debutBroad/,/finBroad/
+
+_C'est_la_seule_goroutine_à_travailler_avec_le_set_clients:_pas_de_lock..._
+
+* handleConn
+
+.code sources/chat/chat.go /debutHandle/,/finHandle/
