@@ -12,12 +12,12 @@ patrick.lachaize@heig-vd.ch
 - Bases du langage
 - Héritage vs Composition
 - Concurrence
-- Programmation réseau en Go
+- Programmation TCP-IP en Go
 
 Crédits:
 
 - [[http://gopl.io]] The Go Programming Language / Alan A. A. Donovan et Brian W. Kernighan
-- [[http://talks.golang.org/2015/sources/go-for-java-programmers.slide]] Go for Java Programmers / Sameer Ajmani
+- [[http://talks.golang.org/2015/sources/google-search.slide]] Go for Java Programmers / Sameer Ajmani
 - [[http://talks.golang.org/2014/go4java.slide]] Go for Javaneros / Francesc Campoy
 
 * Le langage Go comparé à Java
@@ -553,11 +553,9 @@ Avantages:
 - moins de dépendances
 - pas de hiérarchie de types
 
-* FuncDraw: exemple d'utilisation d'une interface
+* Exemple d'application d'une interface entre 2 packages (1/2)
 
-.image sources/img/funcdraw.png 500 700
-
-* FuncDraw: package parser
+_Soit_dans_package_parser_:_
 
 La méthode `Parse` analyse une chaine de caractère et retourne une "fonction"
 
@@ -569,7 +567,9 @@ La méthode `Parse` analyse une chaine de caractère et retourne une "fonction"
 
 	func (p *Func) Eval(x float64) float64 { ... }
 
-* FuncDraw: package draw
+* Exemple d'application d'une interface entre 2 packages (2/2)
+
+_Soit_dans_package_draw_:_
 
 La méthode `Draw` génère la courbe d'une "fonction" donnée.
 
@@ -580,11 +580,9 @@ La méthode `Draw` génère la courbe d'une "fonction" donnée.
 		}
 	}
 
-`draw` depend de `parser`
+`draw` depend de `parser`, cela rend entre autres les tests difficiles.
 
-- cela rend les tests difficiles
-
-Avec plutôt une interface:
+En définissant une interface dans le package draw :
 
 	type Evaluable interface {
 		Eval(float64) float64
@@ -592,21 +590,23 @@ Avec plutôt une interface:
 
 	func Draw(f Evaluable) image.Image { ... }
 
+Rien à changer dans le package parser !
+
 * Héritage vs Composition
 
 * Runner (Java)
 
-.code sources/BadInheritance.java /START_RUNNER/,/END_RUNNER/
+.code sources/heritage/BadInheritance.java /START_RUNNER/,/END_RUNNER/
 
 * RunCounter est-un Runner avec un compteur
 
-.code sources/BadInheritance.java /START_COUNTING/,/END_COUNTING/
+.code sources/heritage/BadInheritance.java /START_COUNTING/,/END_COUNTING/
 
 * Laissons le courir et compter
 
 L'exécution de :
 
-.code sources/BadInheritance.java /START_MAIN/,/END_MAIN/
+.code sources/heritage/BadInheritance.java /START_MAIN/,/END_MAIN/
 
 affiche:
 
@@ -629,11 +629,11 @@ A cause de l'héritage:
 
 * Solution: remplacer l'héritage par une composition
 
-.code sources/Composition.java /START_COUNTING/,/BREAK_COUNTING/
+.code sources/heritage/Composition.java /START_COUNTING/,/BREAK_COUNTING/
 
 * RunCounter (suite)
 
-.code sources/Composition.java /BREAK_COUNTING/,/END_COUNTING/
+.code sources/heritage/Composition.java /BREAK_COUNTING/,/END_COUNTING/
 
 * Une composition plutôt qu'un héritage
 
@@ -685,15 +685,15 @@ Cela ressemble à de l'héritage mais les types incorporés sont réellement ind
 
 Soit un type `Person`:
 
-.code sources/embedsample.go /Person/,/Hi/
+.code sources/heritage/embedsample.go /Person/,/Hi/
 
 On peut définir un type `Employee` incorporant `Person`:
 
-.code sources/embedsample.go /Employee/,/}/
+.code sources/heritage/embedsample.go /Employee/,/}/
 
 Toutes les variables et méthodes de `Person` sont disponibles dans `Employee`:
 
-.code sources/embedsample.go /var/,/Introduce/
+.code sources/heritage/embedsample.go /var/,/Introduce/
 
 * Plus besoin de Name() dans RunCounter2
 
@@ -701,11 +701,11 @@ Toutes les variables et méthodes de `Person` sont disponibles dans `Employee`:
 
 * Exemple avec incorporation d'une interface
 
-.code sources/writecounter.go /WriteCounter/,/MAIN/
+.code sources/heritage/writecounter.go /WriteCounter/,/MAIN/
 
-WriteCounter peut être utilisé avec n'importe quel `io.ReadWriter`.
+writecounter peut être utilisé avec n'importe quel `io.ReadWriter`.
 
-.play sources/writecounter.go /func main/,/^}/
+.play sources/heritage/writecounter.go /func main/,/^}/
 
 * Autre exemple: faciliter un 'mocking'
 
@@ -724,7 +724,7 @@ Simuler seulement certaines méthodes de `net.Conn`
 
 afin de tester `handleCon` ?
 
-.code sources/loopback.go /handleCon/
+.code sources/heritage/loopback.go /handleCon/
 
 On peut créer un type 'fakeConn' pour remplacer 'Conn' mais il faudrait redéfinir toutes les méthodes de  `Conn` dans 'fakeConn' pour pouvoir le passer à 'handleConn'
 
@@ -732,11 +732,11 @@ On peut créer un type 'fakeConn' pour remplacer 'Conn' mais il faudrait redéfi
 
 On peut tester `handleCon` avec le type`loopBack`:
 
-.code sources/loopback.go /loopBack/,/^}/
+.code sources/heritage/loopback.go /loopBack/,/^}/
 
 On n'y définit que les méthodes utilisées :
 
-.code sources/loopback.go /Read/,
+.code sources/heritage/loopback.go /Read/,
 
 et loopBack satisfait Conn
 
@@ -813,21 +813,21 @@ Des fonctions Web, Image, Video (de type Search) :
 - retournent des liens (Result), ici un simple message de fin de recherche
 - après un certain temps, simulé avec un  tirage aléatoire
 
-.code sources/go-for-java-programmers/google-serial.go /START2/,/STOP2/
+.code sources/google-search/google-serial.go /START2/,/STOP2/
 
 * Recherches séquentielles
 
 La fonction Google lance séquentiellement des recherches Web, Image et Video.
 Elle retourne les résultats cumulés dans un slice.
-.code sources/go-for-java-programmers/google-serial.go /START1/,/STOP1/
+.code sources/google-search/google-serial.go /START1/,/STOP1/
 
 Un main pour l'essayer :
-.play sources/go-for-java-programmers/google-serial.go /func.main/,/}/
+.play sources/google-search/google-serial.go /func.main/,/}/
 
 
 * Recherches parallèles
 
-.play sources/go-for-java-programmers/google-parallel.go /Google/,/^}/
+.play sources/google-search/google-parallel.go /Google/,/^}/
 
 Conversion facile: go func, channel
 
@@ -839,7 +839,7 @@ _pas_de_locks,_pas_de_variables_conditionnelles,_pas_de_callback_
 
 * Recherches avec timeout : ne pas attendre les serveurs lents.
 
-.play -edit sources/go-for-java-programmers/google-timeout.go /START/,/STOP/
+.play -edit sources/google-search/google-timeout.go /START/,/STOP/
 L'instruction select permet de gérer les timeout, done, abort, ...
 Notez le passage du channel c à 3 buffers pour _délivrer_ les goroutines encore en exécution après timeout. Problème du "goroutine leak".
 Le channel n'est pas vidé mais plus de goroutines en attente dessus : une nouvelle requête en crée un autre et l'ancien passe au ramasse-miettes.
@@ -848,11 +848,11 @@ Le channel n'est pas vidé mais plus de goroutines en attente dessus : une nouve
 
 On reçoit les ids sur un channel.
 
-.code sources/goodcounter.go /nextID/,/^}/
+.code sources/heritage/goodcounter.go /nextID/,/^}/
 
 main les envoie sur ce channel : _pas_de_compteur_partagé,_pas_de_lock,_..._
 
-.play sources/goodcounter.go /func main/,/^}/
+.play sources/heritage/goodcounter.go /func main/,/^}/
 
 C'est tout ? Oui : [[http://localhost:8080/next]]
 
@@ -863,15 +863,35 @@ C'est tout ? Oui : [[http://localhost:8080/next]]
 - [[http://talks.golang.org/2012/waza.slide#1][Concurrency is not Parellelism]], by Rob Pike
 
 
-* Programmation réseau en Go
+* Programmation TCP-IP en Go
 
-* netcat
+* Client UDP
+.code sources/udp/udpclient.go /debut/,/fin/
+defer reporte un appel de fonction en fin de méthode, dans tous les cas de sortie
+conn satisfait l'interface ReadWriter : on peut le copier ligne à ligne comme un fichier
+
+* Serveur UDP
+.code sources/udp/udpserver.go /debut/,/fin/
+ListenUDP plutôt que Listen rend un UDPConn avec des méthodes spécifiques :
+obtenir l'adresse du client, envoyer à une adresse, ...
+
+* Multicast UDP (1/2)
+
+.code sources/udp/udpmulticast.go /debut/,/milieu/
+Les adresses entre 224... et 239... sont réservées au multicast
+L'émission est la même qu'en unicast, mais diffusion par les routeurs à tous les clients en écoute sur la même adresse
+
+* Multicast UDP (2/2)
+.code sources/udp/udpmulticast.go /milieu/,/fin/
+ListenMulticastUDP permettrait la réception des messages d'un routeur multicast mais pour avoir l'écho local en multicast, on doit utiliser le package "golang.org/x/net/ipv4"
+
+* Client TCP (netcat)
 .code sources/chat/netcat.go /debutMain/,/finMain/
 io.copy(dst io.Writer, src io.Reader) // copie ligne à ligne jusqu'à ctrl-D, close ou erreur
-2 goroutines : fonction litérale pour la reception (1) , main pour l'émission (0)
+2 goroutines : fonction littérale pour la reception (1) , main pour l'émission (0)
 ctrl-D -> (0) close -> close du serveur -> (1) log "done" -> (1) envoi dans channel done -> (0) reception dans channel done -> fin d'exécution
 
-* Chat Server
+* Server TCP (chat)
 
 .code sources/chat/chat.go /debutMain/,/finMain/
 
@@ -879,7 +899,7 @@ main écoute sur un port et accepte les connexions client
 Pour chaque client, il crée un goroutine handleConn pour s'occuper de la communication avec celui-ci, ce qui permet de les traiter concurremment
 Parallèlement, il crée une goroutine broadcaster qui va gérer les communications entre les handleConn
 
-* Channels pour broadcaster
+* Server TCP: channels pour broadcaster()
 
 .code sources/chat/chat.go /debutChannel/,/finChannel/
 
@@ -895,12 +915,12 @@ Il y aura un channel client par handleConn, donc par client
 'messages' permet la reception des messages "texte" des handleConn
 
 
-* broadcaster
+* Server TCP: broadcaster()
 
 .code sources/chat/chat.go /debutBroad/,/finBroad/
 
 _C'est_la_seule_goroutine_à_travailler_avec_le_set_clients:_pas_de_lock..._
 
-* handleConn
+* Server TCP: handleConn()
 
 .code sources/chat/chat.go /debutHandle/,/finHandle/

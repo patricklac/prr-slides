@@ -1,6 +1,6 @@
 // +build ignore,OMIT
 
-package main
+package heritage
 
 import (
 	"bytes"
