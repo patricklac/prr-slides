@@ -127,36 +127,34 @@ Le dossier helloheig correspond au package main et à l'exécutable helloheig
 
 * Renverser "Hello, Heig"
 
-- fichier hello.go dans un dossier helloheig
+- fichier hello.go dans un dossier hello
 .code -edit sources/helloheig/hello.go
 
-- reverse peut être définie dans hello.go ou dans un fichier fonctions.go de ce dossier
+- reverse peut être définie dans hello.go ou dans un autre fichier .go de ce dossier
 .code -edit sources/helloheig/fonctions.go
 
 * Reverse (avec une majuscule) dans un autre package
-- Reverse définie dans un fichier GOPATH/src/github.com/patricklac/utils/fonctions.go
+- Reverse définie dans un fichier de GOPATH/src/github.com/patricklac/prr/utils
 Tous les fichiers du dossier utils déclarent le package utils. Pas de main
 .code -edit sources/helloheig2pack/fonctions.go  /package/,/FIN/
 
-- main définie dans un fichier GOPATH/src/github.com/patricklac/helloheig/hello.go
+- main définie dans un fichier de GOPATH/src/github.com/patricklac/prr/hello
 .code -edit sources/helloheig2pack/hello.go
 
-* Si un package correspond à un repo git
+* Si un package est dans un repo git
 _go_get_déclenche_un_clone_et_un_build_install_
 
-- installation d'un package dans GOPATH (src et pkg)
- go get github.com/patricklac/utils
+- clone dans GOPATH/src et installation du package dans GOPATH/pkg :
+ go get github.com/patricklac/prr/utils
 
-- installation d'un package main dans GOPATH (src et bin) ... et d' utils
- go get github.com/patricklac/helloheig
+- clone dans GOPATH/src, installation du package utils dans GOPATH/pkg si pas fait précédemment, et de l'exécutable dans GOPATH/bin :
+ go get github.com/patricklac/prr/hello
 
-- un repo git peut contenir plusieurs packages
+Avec cette dernière commande, si les packages sont dans des repos GIT distincts, les 2 sont clonés
 
-_Mécanisme_dit_'GOPATH'_très_pratique_mais_
-
-- tout est dans le GOPATH (1 seul par compte)
-- pas de gestion de version
-- --> en cours de remplacement par les go modules
+_Mécanisme_dit_'GOPATH'_très_pratique_mais_tout_est_dans_le_GOPATH,_sauf_les_packages_standards_qui_sont_dans_le_'GOROOT'_
+1 seul GOPATH par compte, pas de gestion de version
+--> en cours de remplacement par les go modules
 
 * Tests
 - dans le dossier GOPATH/src/github.com/patricklac/utils: go test
