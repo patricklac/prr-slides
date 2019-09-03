@@ -870,8 +870,7 @@ conn satisfait l'interface ReadWriter : on peut le copier ligne à ligne comme u
 
 * Serveur UDP
 .code sources/udp/udpserver.go /debut/,/fin/
-ListenUDP plutôt que Listen rend un UDPConn avec des méthodes spécifiques :
-obtenir l'adresse du client, envoyer à une adresse, ...
+ListenUDP plutôt que Listen rend un UDPConn avec des méthodes spécifiques
 
 * Multicast UDP (1/2)
 
@@ -881,7 +880,7 @@ L'émission est la même qu'en unicast, mais diffusion par les routeurs à tous 
 
 * Multicast UDP (2/2)
 .code sources/udp/udpmulticast.go /milieu/,/fin/
-ListenMulticastUDP permettrait la réception des messages d'un routeur multicast mais pour avoir l'écho local en multicast, on doit utiliser le package "golang.org/x/net/ipv4"
+"golang.org/x/net/ipv4" permet l'accès au multicast sans désactiver l'écho local
 
 * Client TCP (netcat)
 .code sources/chat/netcat.go /debutMain/,/finMain/
