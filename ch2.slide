@@ -136,7 +136,7 @@ Le dossier helloheig correspond au package main et à l'exécutable helloheig
 * Reverse (avec une majuscule) dans un autre package
 - Reverse définie dans un fichier de GOPATH/src/github.com/patricklac/prr/utils
 Tous les fichiers du dossier utils déclarent le package utils. Pas de main
-.code -edit sources/helloheig2pack/fonctions.go  /package/,/FIN/
+.code -edit sources/helloheig2pack/fonctions.go  /Package/,/FIN/
 
 - main définie dans un fichier de GOPATH/src/github.com/patricklac/prr/hello
 .code -edit sources/helloheig2pack/hello.go
