@@ -1,6 +1,6 @@
 // +build ignore,OMIT
 
-package heritage
+package main
 
 import (
 	"fmt"
