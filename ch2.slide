@@ -156,6 +156,25 @@ _Mécanisme_dit_'GOPATH'_très_pratique_mais_tout_est_dans_le_GOPATH,_sauf_les_p
 1 seul GOPATH par compte, pas de gestion de version
 --> en cours de remplacement par les go modules
 
+* godoc
+
+- en local
+ > godoc github.com/patricklac/prr/utils
+ PACKAGE DOCUMENTATION
+
+ package utils
+    import "github.com/patricklac/prr/utils"
+
+    Package utils define various functions for prr
+
+ FUNCTIONS
+
+ func Reverse(s string) string
+     Reverse string rune by rune
+
+- en ligne
+[[http://godoc.org/github.com/patricklac/prr/utils]]
+
 * Tests
 - dans le dossier GOPATH/src/github.com/patricklac/utils: go test
 - fonctions_test.go
