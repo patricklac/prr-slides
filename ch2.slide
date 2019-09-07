@@ -885,11 +885,11 @@ C'est tout ? Oui : [[http://localhost:8080/next]]
 * Client UDP
 .code sources/udp/udpclient.go /debut/,/fin/
 defer reporte un appel de fonction en fin de méthode, dans tous les cas de sortie
-conn satisfait l'interface ReadWriter : on peut le copier ligne à ligne comme un fichier
+Conn satisfait l'interface ReadWriter : on peut le copier ligne à ligne comme un fichier
 
 * Serveur UDP
 .code sources/udp/udpserver.go /debut/,/fin/
-ListenUDP plutôt que Listen rend un UDPConn avec des méthodes spécifiques
+ListenPacket plutôt que Listen rend un PacketConn avec ReadFrom et WriteTo
 
 * Multicast UDP (1/2)
 
@@ -899,7 +899,7 @@ L'émission est la même qu'en unicast, mais diffusion par les routeurs à tous 
 
 * Multicast UDP (2/2)
 .code sources/udp/udpmulticast.go /milieu/,/fin/
-"golang.org/x/net/ipv4" permet l'accès au multicast sans désactiver l'écho local
+"golang.org/x/net/ipv4" permet, avec son PacketConn, le multicast avec écho local
 
 * Client TCP (netcat)
 .code sources/chat/netcat.go /debutMain/,/finMain/
