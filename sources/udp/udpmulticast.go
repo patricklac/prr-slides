@@ -32,7 +32,7 @@ func clientReader() {
 	defer conn.Close()
 	p := ipv4.NewPacketConn(conn) // convert to ipv4 packetConn
 	addr, _ := net.ResolveUDPAddr("udp", multicastAddr)
-	p.JoinGroup(nil, addr)
+	p.JoinGroup(nil, addr) // darwin : interface en0
 	buf := make([]byte, 1024)
 	for {
 		n, addr, err := conn.ReadFrom(buf) // n, _, addr, err := p.ReadFrom(buf)
