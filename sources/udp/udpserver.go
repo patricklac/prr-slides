@@ -11,15 +11,14 @@ const srvAddr = "127.0.0.1:6000"
 
 // debut, OMIT
 func main() {
-	addr, _ := net.ResolveUDPAddr("udp", srvAddr)
-	conn, err := net.ListenUDP("udp", addr)
+	conn, err := net.ListenPacket("udp", srvAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
 	buf := make([]byte, 1024)
 	for {
-		n, cliAddr, err := conn.ReadFromUDP(buf)
+		n, cliAddr, err := conn.ReadFrom(buf)
 		if err != nil {
 			log.Fatal(err)
 		}
