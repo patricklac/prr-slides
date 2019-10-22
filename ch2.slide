@@ -940,3 +940,21 @@ _C'est_la_seule_goroutine_à_travailler_avec_le_set_clients:_pas_de_lock..._
 * Server TCP: handleConn()
 
 .code sources/chat/chat.go /debutHandle/,/finHandle/
+
+* Exercice
+
+- Modifiez le serveur TCP de chat pour limiter le nombre de client simultanés
+
+Limite fixée par une constante dans le code
+
+Si la limite est atteinte, un message signale au client qu'il doit patienter
+
+Lorsque le client est admis, un message le lui signale
+
+- Tips
+Un channel à nil dans le case d'un select n'est jamais sélectionné
+Vous pouvez dynamiquement affecter un channel ou nil dans le case d'un select
+
+- Le code source à modifier :
+ go get github.com/patricklac/prr/tcp
+
