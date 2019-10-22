@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -30,17 +32,17 @@ func clientReader() {
 	defer conn.Close()
 	p := ipv4.NewPacketConn(conn) // convert to ipv4 packetConn
 	addr, _ := net.ResolveUDPAddr("udp", multicastAddr)
-	p.JoinGroup(nil, addr) // listen on ip multicast
+	p.JoinGroup(nil, addr) // darwin : interface en0
 	buf := make([]byte, 1024)
 	for {
 		n, addr, err := conn.ReadFrom(buf) // n, _, addr, err := p.ReadFrom(buf)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// extract text without CR/LF
-		var text string
-		fmt.Sscanf(string(buf[0:n]), "%s", &text)
-		fmt.Printf("%s from %v\n", text, addr)
+		s := bufio.NewScanner(bytes.NewReader(buf[0:n]))
+		for s.Scan() {
+			fmt.Printf("%s from %v\n", s.Text(), addr)
+		}
 	}
 }
 
